@@ -3,69 +3,45 @@
 __author__ = "Jeremy Malloch"
 __copyright__ = "Copyleft 2016"
 __credits__ = ["Jeremy Malloch"]
-__license__ = "GNU"
+__license__ = "GPL"
 __version__ = "3"
 __maintainer__ = "Jeremy Malloch"
 __email__ = "jmalloch@uwaterloo.ca"
 __status__ = "Prototype"
 
-
 import sys
-from PyQt4 import QtGui
-
-from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg as NavigationToolbar
+import pandas as pd
 import matplotlib.pyplot as plt
+import matplotlib.animation as animation
+import numpy as np
 
-import random
+#Take in from command line the refresh rate of data coming in so it will
+#be used to match the refresh rate of the animation
+sys.argv[1] = refreshRate
 
-class Window(QtGui.QDialog):
-    def __init__(self, parent=None):
-        super(Window, self).__init__(parent)
+#Take in from command line the length of time of the window to view in seconds
+sys.argv[2] = frameLength
 
-        # a figure instance to plot on
-        self.figure = plt.figure()
+#Global variable for the number of data channels coming (number of plots is 
+#double this, since there is the filtered and unfiltered output)
+inChannels = 2
 
-        # this is the Canvas Widget that displays the `figure`
-        # it takes the `figure` instance as a parameter to __init__
-        self.canvas = FigureCanvas(self.figure)
+#Initialize the Pandas Dataframe that will store all the data
 
-        # this is the Navigation widget
-        # it takes the Canvas widget and a parent
-        self.toolbar = NavigationToolbar(self.canvas, self)
+#Initilize lists of the subplots that
+unFilteredPlots = []
+FilteredPlots = []
 
-        # Just some button connected to `plot` method
-        self.button = QtGui.QPushButton('Plot')
-        self.button.clicked.connect(self.plot)
+for channels in range(inChannels):
+    unFilteredPlots.append(plt.figure())
+    FilteredPlots.append(plt.figure())
+    
 
-        # set the layout
-        layout = QtGui.QVBoxLayout()
-        layout.addWidget(self.toolbar)
-        layout.addWidget(self.canvas)
-        layout.addWidget(self.button)
-        self.setLayout(layout)
-def plot(self):
-        ''' plot some random stuff '''
-        # random data
-        data = [random.random() for i in range(10)]
-
-        # create an axis
-        ax = self.figure.add_subplot(111)
-
-        # discards the old graph
-        ax.hold(False)
-
-        # plot data
-        ax.plot(data, '*-')
-
-        # refresh canvas
-        self.canvas.draw()
+fig = plt.figure()
+unfiltered1 = fig.add_subplot(2,2,1)
 
 
-if __name__ == '__main__':
-    app = QtGui.QApplication(sys.argv)
 
-    main = Window()
-    main.show()
 
-    sys.exit(app.exec_())
+frame1 = animation.TimedAnimation(fig, interval=200, repeat_delay=None, repeat=True, event_source=None, *args, **kwargs)
+frame2 = animation.TimedAnimation(fig, interval=200, repeat_delay=None, repeat=True, event_source=None, *args, **kwargs)
