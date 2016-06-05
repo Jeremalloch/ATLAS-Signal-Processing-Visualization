@@ -11,6 +11,7 @@ import numpy as np
 import seaborn as sns
 from time import gmtime, strftime
 import csv
+import string
 
 #Kinda obvious who wrote the program based on the style haha
 plt.style.use('seaborn-colorblind')
@@ -35,9 +36,7 @@ inChannels = 2
 df = pd.DataFrame(np.random.randn(10, 4))
 
 #Initialize the x-axis by using the refresh rate and window view length
-xAxis = []
-for sampleNum in range(numSamples):
-	xAxis.append(-1.0*refreshRate*sampleNum)
+xAxis = [-1.0*refreshRate*x for x in range(numSamples)]
 
 #Initilize lists of the subplots that
 unFilteredPlots = []
@@ -55,11 +54,6 @@ for channels in range(inChannels):
     #Set up the filtered plot for an in channel
     FiltTemp = plt.figure(inChannels,2,2*(channels+1))
     FilteredPlots.append(FiltTemp)
-#Update the dataframe, dropping the oldest row of data, writing it to a csv,
-# and adding the latest row
-df.index = df.index + 1
-df.loc[0] = 
-df.drop(index[-1])
 
 #Add label of each column (Unfiltered vs filtered)
 unFilteredPlots[0].set_title('Unfiltered Data')
@@ -75,16 +69,32 @@ plt.show()
 class Current_Data(object):
 	"""Holds the most recent data that is currently displayed"""
 	def __init__(self, numSamples_, inChannels_):
+		Columns = [('UnFilt_'+str(x)) for x in range(1,inChannels_+1)]
+		for x in range(1,inChannels_+1):
+			Columns.append('Filt_+str(x)')
 		self.numSamples = numSamples_
 		self.inChannels = inChannels_
-		self.df = pd.DataFrame(np.zeros((numSamples_, inChannels_*2)))
+		self.df = pd.DataFrame(np.zeros((numSamples_, inChannels_*2)), columns=Columns)
 		#Log the results in a CSV file with current day and time as file name
 		self.fileName = strftime("%Y-%m-%d %H:%M:%S", gmtime())
 		self.df.to_csv(self.fileName)
 		with open('foo.csv', 'a') as self.f:
              self.writer = csv.writer(f)
-	def update(newRow):
+	def update(self, newRow):
 		self.writer.writerows(newRow)
 		self.df.index = df.index + 1
 		self.df.loc[0] = newRow
 		self.df.drop(index[-1])
+	def unFiltData(self, channel_number):
+		'''
+		Method that returns a list of the unfiltered data corresponding to
+		the channel number passed as a parameter
+		'''
+		return self.df[('UnFilt_'+str(channel_number))]
+
+	def uFiltData(self, channel_number):
+		'''
+		Method that returns a list of the filtered data corresponding to
+		the channel number passed as a parameter
+		'''
+		return self.df[('Filt_'+str(channel_number))]
