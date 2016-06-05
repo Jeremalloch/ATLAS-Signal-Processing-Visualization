@@ -10,10 +10,7 @@ import matplotlib.animation as animation
 import numpy as np
 import seaborn as sns
 from time import gmtime, strftime
-
-#Log the results in a CSV file with current day and time as file name
-fileName = strftime("%Y-%m-%d %H:%M:%S", gmtime())
-
+import csv
 
 #Kinda obvious who wrote the program based on the style haha
 plt.style.use('seaborn-colorblind')
@@ -77,13 +74,17 @@ plt.show()
 
 class Current_Data(object):
 	"""Holds the most recent data that is currently displayed"""
-	def __init__(self, ):
-		super(Current_Data, self).__init__()
-		self.arg = arg
-		self.df = pd.DataFrame(np.zeros((numSamples, inChannels*2)))
-		#Opens a CSV file to write the data to
-
+	def __init__(self, numSamples_, inChannels_):
+		self.numSamples = numSamples_
+		self.inChannels = inChannels_
+		self.df = pd.DataFrame(np.zeros((numSamples_, inChannels_*2)))
+		#Log the results in a CSV file with current day and time as file name
+		self.fileName = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+		self.df.to_csv(self.fileName)
+		with open('foo.csv', 'a') as self.f:
+             self.writer = csv.writer(f)
 	def update(newRow):
+		self.writer.writerows(newRow)
 		self.df.index = df.index + 1
 		self.df.loc[0] = newRow
 		self.df.drop(index[-1])
