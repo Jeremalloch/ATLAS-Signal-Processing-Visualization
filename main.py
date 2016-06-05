@@ -99,30 +99,24 @@ class Window(object):
 	'''
     def __init__(self, fig_):
     	self.fig = fig_
+    	self.xAxis = [-1.0*refreshRate*x for x in range(numSamples)]
     	self.unFilteredPlots = [(self.fig.add_subplot(inChannels,2,1 + 2*channels)) for channels in range(inChannels)]
     	self.FilteredPlots = [(self.fig.add_subplot(inChannels,2,1 + 2*channels+1)) for channels in range(inChannels)]
-
-    def init(self):
-        self.success = 0
-        self.line.set_data([], [])
-        return self.line,
+    	#Add label of each column (Unfiltered vs filtered)
+    	self.unFilteredPlots[0].set_title('Unfiltered Data')
+		self.FilteredPlots[0].set_title('Filtered Data')
 
     def __call__(self, i):
         # This way the plot can continuously run and we just keep
         # watching new realizations of the process
         if i == 0:
             return self.init()
+        for subplot in self.unFilteredPlots:
+        	unFiltTemp.plot(self.xAxis, Data.unFiltData(channels))
+        for subplot in self.FilteredPlots:
+        	FiltTemp.plot(self.xAxis, Data.FiltData(channels))
 
-        # Choose success based on exceed a threshold with a uniform pick
-        if np.random.rand(1,) < self.prob:
-            self.success += 1
-        y = ss.beta.pdf(self.x, self.success + 1, (i - self.success) + 1)
-        self.line.set_data(self.x, y)
-        return self.line,
-
-#Add label of each column (Unfiltered vs filtered)
-unFilteredPlots[0].set_title('Unfiltered Data')
-FilteredPlots[0].set_title('Filtered Data')
+        return self.fig
 
 #Label the x-axis 
 plt.xlabel('time (ms)')
