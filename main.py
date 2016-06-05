@@ -9,6 +9,11 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import numpy as np
 import seaborn as sns
+from time import gmtime, strftime
+
+#Log the results in a CSV file with current day and time as file name
+fileName = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+
 
 #Kinda obvious who wrote the program based on the style haha
 plt.style.use('seaborn-colorblind')
@@ -19,7 +24,7 @@ plt.style.use('seaborn-colorblind')
 try:
     refreshRate, frameLength = int(sys.argv[1]), int(sys.argv[2])
 except ValueError:
-    print("Refresh rate or framel length is not a valid number")
+    print("Refresh rate or frame length is not a valid number")
 
 #Global variable for the number of samples that will be displayed at any time
 numSamples = frameLength/refreshRate
@@ -33,20 +38,52 @@ inChannels = 2
 df = pd.DataFrame(np.random.randn(10, 4))
 
 #Initialize the x-axis by using the refresh rate and window view length
-xAxis = np.linspace(0.0, 10000, num=(numSamples+1), endpoint=False)
+xAxis = []
+for sampleNum in range(numSamples):
+	xAxis.append(-1.0*refreshRate*sampleNum)
 
 #Initilize lists of the subplots that
 unFilteredPlots = []
 FilteredPlots = []
 
-for channels in range(inChannels):
-    unFilteredPlots.append(plt.figure())
-    FilteredPlots.append(plt.figure())
-    
+#Initializing the plot
+fig = plt.figure()
 
+#Initialize all the subplots
+for channels in range(inChannels):
+	#Set up the unfiltered plot for an in channel
+    unFiltTemp = fig.add_subplot(inChannels,2,1 + 2*channels)
+    unFiltTemp.plot(xAxis, )
+    unFilteredPlots.append(unFiltTemp)
+    #Set up the filtered plot for an in channel
+    FiltTemp = plt.figure(inChannels,2,2*(channels+1))
+    FilteredPlots.append(FiltTemp)
+#Update the dataframe, dropping the oldest row of data, writing it to a csv,
+# and adding the latest row
+df.index = df.index + 1
+df.loc[0] = 
+df.drop(index[-1])
+
+#Add label of each column (Unfiltered vs filtered)
+unFilteredPlots[0].set_title('Unfiltered Data')
+FilteredPlots[0].set_title('Filtered Data')
 
 #Label the x-axis 
 plt.xlabel('time (ms)')
 
 #frame1 = animation.TimedAnimation(fig, interval=200, repeat_delay=None, repeat=True, event_source=None, *args, **kwargs)
 plt.show()
+
+
+class Current_Data(object):
+	"""Holds the most recent data that is currently displayed"""
+	def __init__(self, ):
+		super(Current_Data, self).__init__()
+		self.arg = arg
+		self.df = pd.DataFrame(np.zeros((numSamples, inChannels*2)))
+		#Opens a CSV file to write the data to
+
+	def update(newRow):
+		self.df.index = df.index + 1
+		self.df.loc[0] = newRow
+		self.df.drop(index[-1])
