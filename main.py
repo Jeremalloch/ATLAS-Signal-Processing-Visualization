@@ -91,6 +91,35 @@ for channels in range(inChannels):
     FiltTemp.plot(xAxis, Data.FiltData(channels))
     FilteredPlots.append(FiltTemp)
 
+
+
+class Window(object):
+	'''
+	Class that generates the figure to plot
+	'''
+    def __init__(self, fig_):
+    	self.fig = fig_
+    	self.unFilteredPlots = [(self.fig.add_subplot(inChannels,2,1 + 2*channels)) for channels in range(inChannels)]
+    	self.FilteredPlots = [(self.fig.add_subplot(inChannels,2,1 + 2*channels+1)) for channels in range(inChannels)]
+
+    def init(self):
+        self.success = 0
+        self.line.set_data([], [])
+        return self.line,
+
+    def __call__(self, i):
+        # This way the plot can continuously run and we just keep
+        # watching new realizations of the process
+        if i == 0:
+            return self.init()
+
+        # Choose success based on exceed a threshold with a uniform pick
+        if np.random.rand(1,) < self.prob:
+            self.success += 1
+        y = ss.beta.pdf(self.x, self.success + 1, (i - self.success) + 1)
+        self.line.set_data(self.x, y)
+        return self.line,
+
 #Add label of each column (Unfiltered vs filtered)
 unFilteredPlots[0].set_title('Unfiltered Data')
 FilteredPlots[0].set_title('Filtered Data')
