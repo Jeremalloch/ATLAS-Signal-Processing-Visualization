@@ -1,1 +1,7 @@
 .pdf
+.idea/ATLAS-Signal-Processing-Visualization.iml
+.idea/misc.xml
+.idea/modules.xml
+.idea/workspace.xml
+__pycache__/
+src/
