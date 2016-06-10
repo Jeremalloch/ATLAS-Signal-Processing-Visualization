@@ -11,6 +11,10 @@ import string
 __author__ = "Jeremy Malloch"
 __status__ = "Prototype"
 
+#Open the CSV file
+with open(str(self.fileName), 'a') as self.f:
+    self.writer = csv.writer(self.f)
+
 #Kinda obvious who wrote the program based on the style haha
 plt.style.use('seaborn-colorblind')
 
@@ -51,19 +55,18 @@ class Current_Data:
 		self.fileName = strftime("%Y-%m-%d %H:%M:%S", gmtime())+'.csv'
 		#Try out sys.path() so that CSV file is saved in same location as program
 		self.df.to_csv(self.fileName)
-		with open(str(self.fileName), 'a') as self.f:
-            self.writer = csv.writer(self.f)
+
 
 	def update(self, newRow):
         """
         Update the dataframe object, removing the oldest row entry, and
         adding the newRow iterable to the top of the dataframe
         """
-            #self.writer.writerows(newRow)
-            self.df.loc[-1] = newRow  #Adding the new row
-            self.df.index = self.df.index + 1  #Shifting the row index up by one
-            self.df = self.df.sort_index()  #Sorting the dataframe by index
-            self.df.drop(self.df.index[10], inplace=True)  #Drop the oldest data from the dataframe
+        #self.writer.writerows(newRow)
+        self.df.loc[-1] = newRow  #Adding the new row
+        self.df.index = self.df.index + 1  #Shifting the row index up by one
+        self.df = self.df.sort_index()  #Sorting the dataframe by index
+        self.df.drop(self.df.index[10], inplace=True)  #Drop the oldest data from the dataframe
 
 	def unFiltData(self, channel_number):
         """
@@ -110,7 +113,7 @@ class Current_Data:
 
 
 
-class Window(Current_Data:
+class Window(Current_Data):
     """
     Class that generates the figure to plot
     """
