@@ -47,7 +47,6 @@ class Realtime_plot:
     """
 
 	def __init__(self, plt):
-		self.fig = fig_
 		Columns = [('UnFilt_' + str(x)) for x in range(1, inChannels + 1)]
 		for x in range(1, inChannels + 1):
 			Columns.append('Filt_' + str(x))
@@ -59,53 +58,59 @@ class Realtime_plot:
 		# self.fileName = strftime("%Y-%m-%d %H:%M:%S", gmtime()) + '.csv'
 		# TODO Look into sys.path() so that CSV file is saved in same location as program
 		# self.df.to_csv(fileName)
+		self.fig, self.PlotArray = plt.subplots(inChannels, 2, sharex='col', sharey='row') #Initialize the subplots
 		self.xAxis = [-1.0 * refreshRate * x for x in range(numSamples + 1)]
-		self.unFilteredPlots = [(self.fig.add_subplot(inChannels, 2, 1 + 2 * channels)) for channels in range(inChannels)]
-		self.FilteredPlots = [(self.fig.add_subplot(inChannels, 2, 1 + 2 * channels + 1)) for channels in range(inChannels)]
-		self.unFilteredPlots[0].set_title('Unfiltered Data')    #Add a label above the column of unfiltered plots
-		self.FilteredPlots[0].set_title('Filtered Data')    #Add a label above the column of filtered plots
+		self.PlotArray[0, 0].set_title('Filtered Data')    #Add a label above the column of filtered plots
+		self.PlotArray[0, 1].set_title('Unfiltered Data')    #Add a label above the column of unfiltered plots
 
-	def update(self, newRow):
+
+	def update(self):
 		"""
 	    Update the dataframe object, removing the oldest row entry, and
-		adding the newRow iterable to the top of the dataframe
+		adding the newRow iterable to the top of the DataFrame
 		"""
 		# self.writer.writerows(newRow)
-		self.df.loc[-1] = newRow    # Adding the new row
+		self.df.loc[-1] = self.updateData()    # Adding the new row
 		self.df.index = self.df.index + 1   # Shifting the row index up by one
 		self.df.sort_index()  # Sorting the dataframe by index
 		self.df.drop(self.df.index[10], inplace=True)   # Drop the oldest data from the dataframe
 		self.plot_()    #Update the plot
 
-	def unFiltData(self, channel_number):
+	def updateData(self):
 		"""
-		Method that returns a list of the unfiltered data corresponding to
-		the channel number passed as a parameter
+		Returns a list of updated data from the input
+		:return: list of type float
 		"""
-		return self.df[('UnFilt_' + str(channel_number))]
+		# As stopgap until raspberry pi data collection code is collected, random x values are generated
+		return np.random.rand(inChannels)
 
-	def FiltData(self, channel_number):
+	def getData(self, ):
 		"""
-	    Method that returns a list of the filtered data corresponding to
-	    the channel number passed as a parameter
-	    """
-		return self.df[('Filt_' + str(channel_number))]
+		Returns a pandas series object for the y values for one plot
+		:return: Pandas series of floats
+		"""
 
-	def plot_(self):
+	def getPlot(self, Row, Column):
+		"""
+		Returns the subplot located at the row and column referenced
+		:param Row: int
+		:param Column: int
+		:return: matplotlib.axes._subplots.AxesSubplot object
+		"""
+		return self.PlotArray[Row, Column]
+
+	def updatePlot(self):
 		"""
 		Updates the plot upon new data being added to the current data
 		data frame
-		:param fig:
-		:return:
+		:return: matplotlib.figure.Figure
 		"""
-		for num, subplot in enumerate(self.unFilteredPlots):
-			self.unFilteredPlots[num].plot(self.xAxis, self.unFiltData(num))
-		for num, subplot in enumerate(self.FilteredPlots):
-			self.FilteredPlots[num].plot(self.xAxis, self.FiltData(channels))
+		for num, subplot in enumerate(self.PlotArray):  #Update the unfiltered data plots
+			self.PlotArray[0][num].plot(self.xAxis, self.unFiltData(num))
+		for num, subplot in enumerate(self.PlotArray):  #Update the filtered data plots
+			self.PlotArray[1][num].plot(self.xAxis, self.FiltData(channels))
+
 		return self.fig
-
-
-
 
 
 	def test(self):
@@ -116,28 +121,6 @@ class Realtime_plot:
 		for x in range(1, 15):
 			self.update([x, x, x, x])
 		return self.df
-
-#
-# class Display(Current_Data):
-# 	"""
-# 	Class that generates the figure to plot
-# 	"""
-#
-# 	def __init__(self, fig_):
-# 		super().__init__()
-#
-#
-# 	def __call__(self, i):
-# 		"""
-# 		Allows plot to continuously run and display
-# 		updates from the new data
-# 		"""
-# 		if i == 0:
-# 			return self.init()
-#
-# 		return self.figs
-#
-#
 
 class Data_source:
 	"""
