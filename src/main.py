@@ -62,6 +62,7 @@ class Realtime_plot:
 		self.xAxis = [-1.0 * refreshRate * x for x in range(numSamples + 1)]
 		self.PlotArray[0, 0].set_title('Filtered Data')    #Add a label above the column of filtered plots
 		self.PlotArray[0, 1].set_title('Unfiltered Data')    #Add a label above the column of unfiltered plots
+		self.fig.text(0.5, 0.04, 'Time (ms)', ha='center', va='center') #Set a common x-axis label for both columns
 
 
 	def update(self):
@@ -106,10 +107,9 @@ class Realtime_plot:
 		:return: matplotlib.figure.Figure
 		"""
 		for num, subplot in enumerate(self.PlotArray):  #Update the unfiltered data plots
-			self.PlotArray[0][num].plot(self.xAxis, self.unFiltData(num))
+			self.PlotArray[0][num].plot(self.xAxis, self.df[num]))
 		for num, subplot in enumerate(self.PlotArray):  #Update the filtered data plots
-			self.PlotArray[1][num].plot(self.xAxis, self.FiltData(channels))
-
+			self.PlotArray[1][num].plot(self.xAxis, self.df[len(self.PlotArray)+num])
 		return self.fig
 
 
@@ -122,21 +122,20 @@ class Realtime_plot:
 			self.update([x, x, x, x])
 		return self.df
 
-class Data_source:
-	"""
-	Abstractation of the input data, coming from a raspberry pi
-	Currently just consists of a random number generator
-	"""
-	def __init__(self, input_channels_):
-		self.input_channels = input_channels_
-
-	def update(self):
-		return np.random.rand(self.input_channels)
+# class Data_source:
+# 	"""
+# 	Abstractation of the input data, coming from a raspberry pi
+# 	Currently just consists of a random number generator
+# 	"""
+# 	def __init__(self, input_channels_):
+# 		self.input_channels = input_channels_
+#
+# 	def update(self):
+# 		return np.random.rand(self.input_channels)
 
 
 # Initializing the plot
 fig = plt.figure(figsize = (12, 2 * inChannels))  #Vary the plotting window size based on number of input channels
-ax = plt
 # Initialize the window object
 display = Realtime_plot(plt)
 # Label the x-axis
