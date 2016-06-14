@@ -56,7 +56,7 @@ class Realtime_plot:
 		# self.df.to_csv(fileName)
 		# Initialize the subplots, vary the plotting window size based on number of input channels,
 		self.fig, self.PlotArray = plt.subplots(inChannels, 2, sharex='col', sharey='row', figsize = (12, 2 * inChannels))
-		self.xAxis = [refreshRate * x for x in range(numSamples + 1)]
+		self.xAxis = [refreshRate * x for x in range(numSamples)]
 		self.PlotArray[0, 0].set_title('Filtered Data')    #Add a label above the column of filtered plots
 		self.PlotArray[0, 1].set_title('Unfiltered Data')    #Add a label above the column of unfiltered plots
 		self.fig.text(0.5, 0.04, 'Time (ms)', ha='center', va='center') #Set a common x-axis label for both columns
@@ -108,9 +108,15 @@ class Realtime_plot:
 		data frame
 		:return: matplotlib.figure.Figure
 		"""
+		# TODO Look at converting dataframe column slice into a numpy array to remove index (Likely causing problems)
 		for num, row in enumerate(self.PlotArray):  #Update the unfiltered data plots
-			row[0].plot(self.xAxis, self.df['UnFilt_{}'.format(num)])
-			row[1].plot(self.xAxis, self.df['Filt_{}'.format(num)])
+			y1 = self.df['UnFilt_{}'.format(num + 1)].values
+			y2 = self.df['Filt_{}'.format(num + 1)].values
+			row[0].plot(self.xAxis, y1)
+			row[1].plot(self.xAxis, y2)
+			# tempYaxis = [x for x in range(11)]
+			# row[0].plot(self.xAxis, tempYaxis)
+			# row[1].plot(self.xAxis, tempYaxis)
 		return self.fig
 
 # Initialize the window object
