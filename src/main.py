@@ -26,107 +26,111 @@ plt.style.use('seaborn-colorblind')
 # except ValueError:
 #    print("Refresh rate or frame length is not a valid number")
 
-# Hardcode the value of frameLength and refresh rate
-refreshRate = 200
+# Hardcode the value of frameLength and refresh rate (where dataFrequency is the time interval between data samples)
+dataInterval = 200
 frameLength = 2000
 
+# Animation rate is the frame rate for updating the animation.  Since we have ~6 plots, having too high an animation
+# rate will be unpractical, so instead we'll use 24 fps if the dataFrequency rate is lower than 1/24 (the
+if dataInterval < 1/24:
+    displayInterval = 1/24
+else:
+    displayInterval = dataInterval
+
 # Global variable for the number of samples that will be displayed at any time
-numSamples = frameLength // refreshRate
+numSamples = frameLength // dataInterval
 
 # Global variable for the number of data channels coming (number of plots is
 # double this, since there is the filtered and unfiltered output)
 inChannels = 3
 
 class Realtime_plot:
-	"""
+    """
     Holds the most recent data that is currently displayed
     """
 
-	def __init__(self, plt):
-		Columns = [('UnFilt_' + str(x)) for x in range(1, inChannels + 1)]
-		for x in range(1, inChannels + 1):
-			Columns.append('Filt_' + str(x))
-		# TODO Initilize an empty dataframe so that a string of zeroes won't be written to the csv file
-		self.df = pd.DataFrame(np.zeros((numSamples, inChannels * 2)), columns=Columns)
-		# self.df = pd.DataFrame(np.random.rand(numSamples, (inChannels * 2)), columns=Columns, dtype=float)
-		# TODO look into putting the CSV file into the object
-		# Log the results in a CSV file with current day and time as file name
-		# self.fileName = strftime("%Y-%m-%d %H:%M:%S", gmtime()) + '.csv'
-		# TODO Look into sys.path() so that CSV file is saved in same location as program
-		# self.df.to_csv(fileName)
-		# Initialize the subplots, vary the plotting window size based on number of input channels,
-		self.fig, self.PlotArray = plt.subplots(inChannels, 2, sharex='col', sharey='row', figsize = (12, 2 * inChannels))
-		self.xAxis = [refreshRate * x for x in range(numSamples)]
-		self.PlotArray[0, 0].set_title('Filtered Data')    #Add a label above the column of filtered plots
-		self.PlotArray[0, 1].set_title('Unfiltered Data')    #Add a label above the column of unfiltered plots
-		self.fig.text(0.5, 0.04, 'Time (ms)', ha='center', va='center') #Set a common x-axis label for both columns
+    def __init__(self, plt):
+        Columns = [('UnFilt_' + str(x)) for x in range(1, inChannels + 1)]
+        for x in range(1, inChannels + 1):
+            Columns.append('Filt_' + str(x))
+        # TODO Initilize an empty dataframe so that a string of zeroes won't be written to the csv file
+        self.df = pd.DataFrame(np.zeros((numSamples, inChannels * 2)), columns=Columns)
+        # self.df = pd.DataFrame(np.random.rand(numSamples, (inChannels * 2)), columns=Columns, dtype=float)
+        # TODO look into putting the CSV file into the object
+        # Log the results in a CSV file with current day and time as file name
+        # self.fileName = strftime("%Y-%m-%d %H:%M:%S", gmtime()) + '.csv'
+        # TODO Look into sys.path() so that CSV file is saved in same location as program
+        # self.df.to_csv(fileName)
+        # Initialize the subplots, vary the plotting window size based on number of input channels,
+        self.fig, self.PlotArray = plt.subplots(inChannels, 2, sharex='col', sharey='row', figsize = (12, 2 * inChannels))
+        self.xAxis = [-1*dataInterval * x for x in range(numSamples)]
+        self.PlotArray[0, 0].set_title('Filtered Data')    #Add a label above the column of filtered plots
+        self.PlotArray[0, 1].set_title('Unfiltered Data')    #Add a label above the column of unfiltered plots
+        self.fig.text(0.3, 0.04, 'Time (ms)', ha='center', va='center') #Set an x-axis label for the first column
+        self.fig.text(0.725, 0.04, 'Time (ms)', ha='center', va='center') #Set an x-axis label for the first column
 
-	def update(self):
-		"""
-	    Update the dataframe object, removing the oldest row entry, and
-		adding the newRow iterable to the top of the DataFrame
-		"""
-		# self.writer.writerows(newRow)
-		self.df.loc[-1] = self.updateData()    # Adding the new row
-		self.df.index = self.df.index + 1   # Shifting the row index up by one
-		self.df = self.df.sort_index()  # Sorting the dataframe by index
-		self.df.drop(self.df.index[10], inplace=True)   # Drop the oldest data from the dataframe
-		self.updatePlot()    #Update the plot
+    def update(self):
+        """
+        Update the dataframe object, removing the oldest row entry, and
+        adding the newRow iterable to the top of the DataFrame
+        """
+        # self.writer.writerows(newRow)
+        self.df.loc[-1] = self.updateData()    # Adding the new row
+        self.df.index = self.df.index + 1   # Shifting the row index up by one
+        self.df = self.df.sort_index()  # Sorting the dataframe by index
+        self.df.drop(self.df.index[10], inplace=True)   # Drop the oldest data from the dataframe
+        self.updatePlot()    #Update the plot
 
-	def updateData(self):
-		"""
-		Returns a list of updated data from the input
-		:return: list of type float
-		"""
-		# As stopgap until raspberry pi data collection code is collected, random x values are generated
-		return np.random.rand(inChannels*2)
+    def updateData(self):
+        """
+        Returns a list of updated data from the input
+        :return: list of type float
+        """
+        # As stopgap until raspberry pi data collection code is collected, random x values are generated
+        return np.random.rand(inChannels*2)
 
-	def getData(self, ):
-		"""
-		Returns a pandas series object for the y values for one plot
-		:return: Pandas series of floats
-		"""
+    def getData(self, ):
+        """
+        Returns a pandas series object for the y values for one plot
+        :return: Pandas series of floats
+        """
 
-	def getPlot(self, Row, Column):
-		"""
-		Returns the subplot located at the row and column referenced
-		:param Row: int
-		:param Column: int
-		:return: matplotlib.axes._subplots.AxesSubplot object
-		"""
-		return self.PlotArray[Row, Column]
-	def getFig(self):
-		"""
-		Returns the matplotlib figure object
-		:return: matplotlib.figure.Figure
-		"""
-		return self.fig
+    def getPlot(self, Row, Column):
+        """
+        Returns the subplot located at the row and column referenced
+        :param Row: int
+        :param Column: int
+        :return: matplotlib.axes._subplots.AxesSubplot object
+        """
+        return self.PlotArray[Row, Column]
+    def getFig(self):
+        """
+        Returns the matplotlib figure object
+        :return: matplotlib.figure.Figure
+        """
+        return self.fig
 
-	def updatePlot(self):
-		"""
-		Updates the plot upon new data being added to the current data
-		data frame
-		:return: matplotlib.figure.Figure
-		"""
-		# TODO Look at converting dataframe column slice into a numpy array to remove index (Likely causing problems)
-		for num, row in enumerate(self.PlotArray):  #Update the unfiltered data plots
-			y1 = self.df['UnFilt_{}'.format(num + 1)].values
-			y2 = self.df['Filt_{}'.format(num + 1)].values
-			row[0].plot(self.xAxis, y1)
-			row[1].plot(self.xAxis, y2)
-			# tempYaxis = [x for x in range(11)]
-			# row[0].plot(self.xAxis, tempYaxis)
-			# row[1].plot(self.xAxis, tempYaxis)
-		return self.fig
+    # def updatePlot(self):
+    #     """
+    #     Updates the plot upon new data being added to the current data
+    #     data frame
+    #     :return: matplotlib.figure.Figure
+    #     """
+    #     for num, row in enumerate(self.PlotArray):  # Update the unfiltered data plots
+    #         y1 = self.df['UnFilt_{}'.format(num + 1)].values
+    #         y2 = self.df['Filt_{}'.format(num + 1)].values
+    #         row[0].plot(self.xAxis, y1)
+    #         row[1].plot(self.xAxis, y2)
+    #     return self.fig
 
 # Initialize the window object
 display = Realtime_plot(plt)
 
 fig = display.getFig()
 
-#frame = animation.FuncAnimation(fig, Realtime_plot.update, interval=refreshRate, blit=True)
+frame = animation.FuncAnimation(fig, Realtime_plot.update, interval=displayInterval, blit=True)
 
-for x in range(5):
-	display.update()
+# for x in range(5):
+# 	display.update()
 
 plt.show() # display the plt
