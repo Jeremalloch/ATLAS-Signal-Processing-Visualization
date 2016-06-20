@@ -110,18 +110,18 @@ class Realtime_plot:
         """
         return self.fig
 
-    # def updatePlot(self):
-    #     """
-    #     Updates the plot upon new data being added to the current data
-    #     data frame
-    #     :return: matplotlib.figure.Figure
-    #     """
-    #     for num, row in enumerate(self.PlotArray):  # Update the unfiltered data plots
-    #         y1 = self.df['UnFilt_{}'.format(num + 1)].values
-    #         y2 = self.df['Filt_{}'.format(num + 1)].values
-    #         row[0].plot(self.xAxis, y1)
-    #         row[1].plot(self.xAxis, y2)
-    #     return self.fig
+    def updatePlot(self):
+        """
+        Updates the plot upon new data being added to the current data
+        data frame
+        :return: matplotlib.figure.Figure
+        """
+        for num, row in enumerate(self.PlotArray):  # Update the unfiltered data plots
+            y1 = self.df['UnFilt_{}'.format(num + 1)].values
+            y2 = self.df['Filt_{}'.format(num + 1)].values
+            row[num, 0].plot(self.xAxis, y1)
+            row[num, 1].plot(self.xAxis, y2)
+        return self.fig
 
 # Initialize the window object
 display = Realtime_plot(plt)
