@@ -51,8 +51,8 @@ class Data_Container:
     def __init__(self, inChannels_, frameLength_):
         self.inChannels = inChannels_
         self.frameLength = frameLength_
-        self.unFilterData = [deque(maxlen=frameLength) for x in range(inChannels)]
-        self.FilteredData = [deque(maxlen=frameLength) for x in range(inChannels)]
+        self.unFilterData = [deque(np.zeros(self.frameLength), maxlen=frameLength) for x in range(inChannels)]
+        self.FilteredData = [deque(np.zeros(self.frameLength), maxlen=frameLength) for x in range(inChannels)]
         self.numSamples = 0
         Columns = [('UnFilt_' + str(x)) for x in range(1, inChannels + 1)]
         for x in range(1, inChannels + 1):
@@ -116,15 +116,16 @@ class Realtime_plot:
     Creates a Data_Container object, then takes data from that and updates the animation plot
     """
 
-    def __init__(self, plt):
-
+    def __init__(self, plt, inChannels_):
         self.data = Data_Container()
         self.fig, self.PlotArray = plt.subplots(inChannels, 2, sharex='col', sharey='row', figsize = (12, 2 * inChannels))
+        self.lineArray = [self.PlotArray[0,x].plot(self.data.getUnfilteredData(x)), self.PlotArray[1,x].plot(self.data.getUnfilteredData(x))]
         self.xAxis = [-1*dataInterval * x for x in range(numSamples)]
         self.PlotArray[0, 0].set_title('Filtered Data')    #Add a label above the column of filtered plots
         self.PlotArray[0, 1].set_title('Unfiltered Data')    #Add a label above the column of unfiltered plots
         self.fig.text(0.3, 0.04, 'Time (ms)', ha='center', va='center') #Set an x-axis label for the first column
         self.fig.text(0.725, 0.04, 'Time (ms)', ha='center', va='center') #Set an x-axis label for the first column
+        self.inChannels = inChannels_
 
     def getPlot(self, Row, Column):
         """
@@ -149,9 +150,9 @@ class Realtime_plot:
         :return: matplotlib.figure.Figure
         """
         for num, row in enumerate(self.data.FilteredData):  # Update the unfiltered data plots
-            row[num, 0].plot(self.xAxis, self.data.getUnfilteredData(num))
-            row[num, 1].plot(self.xAxis, self.data.getFiltereredData(num))
-        return self.fig
+            self.lineArray[num].plot(self.xAxis, self.data.getUnfilteredData(num))
+            self.lineArray[num + self.inChannels].plot(self.xAxis, self.data.getFiltereredData(num))
+        return self.lineArray
 
 # Initialize the window object
 display = Realtime_plot(plt)
