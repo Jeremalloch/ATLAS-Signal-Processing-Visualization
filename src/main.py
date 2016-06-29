@@ -1,6 +1,8 @@
 import sys
+import matplotlib
+# matplotlib.use('GTKAgg') Apparently this is windows only, so I'll have to get a different backend that is compatible
+# with all the platforms we're using
 import matplotlib.pyplot as plt
-import matplotlib.animation as animation
 import numpy as np
 import seaborn as sns
 from time import gmtime, strftime
@@ -122,10 +124,10 @@ class Realtime_plot:
         self.inChannels = inChannels_
         self.fig, self.PlotArray = plt.subplots(inChannels, 2, sharex='col', sharey='row', figsize = (12, 2 * inChannels))
         self.lineArray = []
+        self.xAxis = [-1 * dataInterval * x for x in range(numSamples)]
         for x in range(self.inChannels):
-            self.lineArray.append(self.PlotArray[x,0].plot(self.data.getUnfilteredData(x)))
-            self.lineArray.append(self.PlotArray[x,1].plot(self.data.getUnfilteredData(x)))
-        self.xAxis = [-1*dataInterval * x for x in range(numSamples)]
+            self.lineArray.append(*self.PlotArray[x,0].plot(self.data.getUnfilteredData(x)))
+            self.lineArray.append(*self.PlotArray[x,1].plot(self.data.getUnfilteredData(x)))
         self.PlotArray[0, 0].set_title('Filtered Data')    #Add a label above the column of filtered plots
         self.PlotArray[0, 1].set_title('Unfiltered Data')    #Add a label above the column of unfiltered plots
         self.fig.text(0.3, 0.04, 'Time (ms)', ha='center', va='center') #Set an x-axis label for the first column
@@ -151,18 +153,26 @@ class Realtime_plot:
         """
         Updates the plot upon new data being added to the current data
         data frame
-        :return: matplotlib.figure.Figure
         """
-        for num, row in enumerate(self.data.FilteredData):  # Update the unfiltered data plots
-            self.lineArray[num][0].set_ydata(self.data.getUnfilteredData(num))
-            self.lineArray[num + self.inChannels - 1][0].set_ydata(self.data.getFiltereredData(num))
-        return self.lineArray
+        # Update the matplotlib line array objects
+        for num in range(self.inChannels): # Update the unfiltered data plots
+            self.lineArray[num].set_ydata(self.data.getUnfilteredData(num))
+            self.lineArray[num + self.inChannels - 1].set_ydata(self.data.getFiltereredData(num))
+        for num, ax in enumerate(self.PlotArray):
+            # ax[0].draw_artist(ax[0].patch)
+            ax[0].draw_artist(self.lineArray[num])
+            # ax[1].draw_artist(ax[1].patch)
+            ax[1].draw_artist(self.lineArray[num])
+        # Update the overall plot
+        fig.canvas.update()
+        fig.canvas.flush_events()
+
 
 # Initialize the window object
 display = Realtime_plot(plt, inChannels, frameLength, dataInterval)
 
+plt.show()
 fig = display.getFig()
 
-# display.updatePlot()
+display.updatePlot()
 
-frame = animation.FuncAnimation(fig, display.updatePlot(), interval=displayInterval, blit=True)
